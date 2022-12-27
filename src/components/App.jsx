@@ -1,77 +1,40 @@
+import { Toaster } from 'react-hot-toast';
 import { GlobalStyle } from './GlobalStyle';
-import { Component } from 'react';
-import 'modern-normalize';
-import { fetchMovies } from 'MoviesApi';
-import { Button } from './Button';
-import { MoviesGallery } from './MoviesGallery';
-import { Modal } from './Modal';
+import { Routes, Route } from 'react-router-dom';
 
-export class App extends Component {
-  state = {
-    movies: [],
-    page: 1,
-    isLoading: false,
-    error: '',
-    isMoviesShown: false,
-    currentImage: null,
-  };
+import { Home } from 'pages/Home/Home';
+import { MovieDetails } from '../pages/MovieDetails/MovieDetails';
+import { Layout } from './Layout/Layout';
+import { NotFound } from './NotFound/NotFound';
+import { Reviews } from './Reviews/Reviews';
+import { Cast } from './Cast/Cast';
+import { Movies } from 'pages/Movies/Movies';
 
-  componentDidUpdate(_, prevState) {
-    if (
-      (prevState.isMoviesShown !== this.state.isMoviesShown &&
-        this.state.isMoviesShown) ||
-      prevState.page !== this.state.page
-    ) {
-      fetchMovies(this.state.page).then(({ data: { results } }) => {
-        this.setState(prevState => ({
-          movies: [...prevState.movies, ...results],
-        }));
-      });
-    }
-    if (
-      prevState.isMoviesShown !== this.state.isMoviesShown &&
-      !this.state.isMoviesShown
-    ) {
-			this.setState({ movies: [], page: 1 });
-			
-    }
-  }
-
-  toggleVisibility = () => {
-    this.setState(prevState => ({ isMoviesShown: !prevState.isMoviesShown }));
-  };
-
-  openModal = image => {
-    this.setState({ currentImage: image });
-  };
-
-  closeModal = () => {
-    this.setState({ currentImage: null });
-  };
-
-  loadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-
-  render() {
-    const { isMoviesShown, movies, currentImage } = this.state;
-    return (
-      <>
-        <Button
-          text={isMoviesShown ? 'Hide movies' : 'Show movies'}
-          clickHandler={this.toggleVisibility}
-        />
-        {movies.length > 0 && (
-          <>
-            <MoviesGallery movies={movies} onModal={this.openModal} />
-            <Button text="Load more" clickHandler={this.loadMore} />
-          </>
-        )}
-        {currentImage && (
-          <Modal image={currentImage} offModal={this.closeModal} />
-        )}
-        <GlobalStyle />
-      </>
-    );
-  }
-}
+export const App = () => {
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="movies" element={<Movies/>} />
+          <Route path="movies/:movieId" element={<MovieDetails />}>
+            <Route path="cast" element={<Cast />} />
+						<Route path="reviews" element={<Reviews />} />
+						<Route path="*" element={<NotFound />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+      <Toaster
+        toastOptions={{
+          duration: 5000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+        }}
+      />
+      <GlobalStyle />
+    </>
+  );
+};
